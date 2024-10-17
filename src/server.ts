@@ -9,7 +9,7 @@ dotenv.config();
 // Create a PostgreSQL client
 const db = new Client({
   user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  password: process.env.DB_PASSWORD
 });
 
 // Connects to the database
@@ -99,4 +99,149 @@ console.table(res.rows);
 startApp();
 });
 }
+
+// Add a department
+function addDepartment() {
+    inquirer
+      .prompt([
+        {
+          name: 'departmentname',
+          message: 'Enter the name of the department:',
+        },
+      ])
+      .then((answer) => {
+        db.query('INSERT INTO departments (name) VALUES ($1)', [answer.departmentName], (err, res) => {
+          if (err) throw err;
+          console.log(`Added department: ${answer.departmentName}`);
+          startApp();
+        });
+      });
+  }
+
+// Add a role
+function addRole() {
+    db.query('SELECT * FROM departments', (err, res) => {
+      if (err) throw err;
+      const departments = res.rows.map(({ id, name }) => ({
+        name: name,
+        value: id,
+      }));
+      inquirer
+        .prompt([
+          { name: 'roleTitle', message: 'Enter the role title:' },
+          { name: 'roleSalary', message: 'Enter the salary for the role:' },
+          {
+            type: 'list',
+            name: 'departmentId',
+            message: 'Select the department:',
+            choices: departments,
+          },
+        ])
+        .then((answer) => {
+          db.query(
+            'INSERT INTO roles (title, salary, department_id) VALUES ($1, $2, $3)',
+            [answer.roleTitle, answer.roleSalary, answer.departmentId],
+            (err, res) => {
+              if (err) throw err;
+              console.log(`Added role: ${answer.roleTitle}`);
+              startApp();
+            }
+          );
+        });
+    });
+  }
+  
+
+// Add an employee
+
+function addEmployee() {
+    db.query('SELECT * FROM roles', (err, res) => {
+      if (err) throw err;
+      const roles = res.rows.map(({ id, title }) => ({ name: title, value: id }));
+      db.query('SELECT * FROM employees', (err, res) => {
+        if (err) throw err;
+        const managers = res.rows.map(({ id, first_name, last_name }) => ({
+          name: `${first_name} ${last_name}`,
+          value: id,
+        }));
+        managers.unshift({ name: 'None', value: null });
+  
+        inquirer
+          .prompt([
+            { name: 'firstName', message: 'Enter the employee\'s first name:' },
+            { name: 'lastName', message: 'Enter the employee\'s last name:' },
+            {
+              type: 'list',
+              name: 'roleId',
+              message: 'Select the employee\'s role:',
+              choices: roles,
+            },
+            {
+              type: 'list',
+              name: 'managerId',
+              message: 'Select the employee\'s manager:',
+              choices: managers,
+            },
+          ])
+          .then((answer) => {
+            db.query(
+              'INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)',
+              [answer.firstName, answer.lastName, answer.roleId, answer.managerId],
+              (err, res) => {
+                if (err) throw err;
+                console.log(`Added employee: ${answer.firstName} ${answer.lastName}`);
+                startApp();
+              }
+            );
+          });
+      });
+    });
+  }
+  
+
+// Update an employee's role
+function updateEmployeeRole() {
+    db.query('SELECT * FROM employees', (err, res) => {
+      if (err) throw err;
+      const employees = res.rows.map(({ id, first_name, last_name }) => ({
+        name: `${first_name} ${last_name}`,
+        value: id,
+      }));
+      db.query('SELECT * FROM roles', (err, res) => {
+        if (err) throw err;
+        const roles = res.rows.map(({ id, title }) => ({ name: title, value: id }));
+  
+        inquirer
+          .prompt([
+            {
+              type: 'list',
+              name: 'employeeId',
+              message: 'Select the employee to update:',
+              choices: employees,
+            },
+            {
+              type: 'list',
+              name: 'newRoleId',
+              message: 'Select the new role:',
+              choices: roles,
+            },
+          ])
+          .then((answer) => {
+            db.query(
+              'UPDATE employees SET role_id = $1 WHERE id = $2',
+              [answer.newRoleId, answer.employeeId],
+              (err, res) => {
+                if (err) throw err;
+                console.log('Employee role updated');
+                startApp();
+              }
+            );
+          });
+      });
+    });
+  }
+
+// Start the app
+startApp();
+
 
