@@ -1,22 +1,14 @@
-import dotenv from 'dotenv';
-import { Client } from 'pg';
 import inquirer from 'inquirer';
+import  db   from './connection';
 import fs from 'fs';
 
-// Load environment variables
-dotenv.config();
 
-// Create a PostgreSQL client
-const db = new Client({
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD
-});
+  // Connects to the database
+  await db.connect();
 
-// Connects to the database
-await db.connect();
+   // Read SQL queries from the file
+   const sqlQueries = fs.readFileSync('db/queries.sql', 'utf8').split(';').map(q => q.trim());
 
-// Read SQL queries from the file
-const sqlQueries = fs.readFileSync('db/queries.sql', 'utf8').split(';').map(q => q.trim());
 
 // Function to start the application
 function startApp() {
