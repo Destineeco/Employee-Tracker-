@@ -1,6 +1,6 @@
 
 SELECT
-    department.title AS department,
+    department.name AS department,
     employee.first_name,
     employee.last_name,
     role.title
