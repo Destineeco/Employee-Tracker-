@@ -1,12 +1,26 @@
-import dotenv from 'dotenv';
+// connection.js
 import pkg from 'pg';
+import dotenv from 'dotenv';
 const { Client } = pkg;
-// Load environment variables
+// Load environment variables from .env file
 dotenv.config();
-// Create a PostgreSQL client
-const db = new Client({
-    user: process.env.DB_USER,
+// Create a new PostgreSQL client
+const client = new Client({
     host: process.env.DB_HOST,
-    password: process.env.DB_PASS,
+    port: 5432,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
 });
-export default db;
+// Connect to the database
+const connectDb = async () => {
+    try {
+        await client.connect();
+        console.log('Connected to the database successfully.');
+    }
+    catch (error) {
+        console.error('Database connection error:', error);
+    }
+};
+// Export the client and connectDb function
+export { client, connectDb };
