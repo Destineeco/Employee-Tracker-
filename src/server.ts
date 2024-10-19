@@ -2,17 +2,17 @@
 import inquirer from 'inquirer';
 import connection from './connection.js';
 
-
+// Connects to the database
 async function initDb() {
   try {
     await connection.connect();
     console.log('Connected to the database.');
   } catch (err) {
-    console.error('Database connection error',);
+    console.error('Database connection error');
   }
 }
 
-
+// Function to start the application
 async function startApp() {
   const { action } = await inquirer.prompt({
     name: 'action',
@@ -58,17 +58,17 @@ async function startApp() {
       return;
   }
 
-  
+  // Restart the application
   startApp();
 }
 
-
+// View all Departments
 async function viewDepartments() {
   const res = await connection.query('SELECT * FROM departments');
   console.table(res.rows);
 }
 
-
+// View all roles
 async function viewRoles() {
   const query = `
     SELECT roles.id, roles.title, roles.salary, departments.name AS department
@@ -78,7 +78,7 @@ async function viewRoles() {
   console.table(res.rows);
 }
 
-
+// View all employees
 async function viewEmployees() {
   const query = `
     SELECT employees.id, employees.first_name, employees.last_name, roles.title,
@@ -93,7 +93,7 @@ async function viewEmployees() {
   console.table(res.rows);
 }
 
-
+// Add a department
 async function addDepartment() {
   const { departmentName } = await inquirer.prompt({
     name: 'departmentName',
@@ -104,7 +104,7 @@ async function addDepartment() {
   console.log(`Added department: ${departmentName}`);
 }
 
-
+// Add a role
 async function addRole() {
   const departmentsRes = await connection.query('SELECT * FROM departments');
   const departments = departmentsRes.rows.map(({ id, name }) => ({
@@ -130,7 +130,7 @@ async function addRole() {
   console.log(`Added role: ${roleTitle}`);
 }
 
-
+// Add an employee
 async function addEmployee() {
   const rolesRes = await connection.query('SELECT * FROM roles');
   const roles = rolesRes.rows.map(({ id, title }) => ({ name: title, value: id }));
@@ -166,7 +166,7 @@ async function addEmployee() {
   console.log(`Added employee: ${firstName} ${lastName}`);
 }
 
-
+// Update an employee's role
 async function updateEmployeeRole() {
   const employeesRes = await connection.query('SELECT * FROM employees');
   const employees = employeesRes.rows.map(({ id, first_name, last_name }) => ({
@@ -199,5 +199,5 @@ async function updateEmployeeRole() {
   console.log('Employee role updated');
 }
 
-
+// Start the application
 initDb().then(startApp).catch(console.error);
