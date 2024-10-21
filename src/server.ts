@@ -135,22 +135,22 @@ async function addRole() {
 
     await client.query(
         'INSERT INTO roles (title, salary, department_id) VALUES ($1, $2, $3)',
-        [roleTitle, roleSalary, departmentId] // Use the exported client
+        [roleTitle, roleSalary, departmentId] 
     );
     console.log(`Added role: ${roleTitle}`);
 }
 
 // Add an employee
 async function addEmployee() {
-    const rolesRes = await client.query('SELECT * FROM roles'); // Use the exported client
+    const rolesRes = await client.query('SELECT * FROM roles'); 
     const roles = rolesRes.rows.map(({ id, title }) => ({ name: title, value: id }));
 
-    const employeesRes = await client.query('SELECT * FROM employees'); // Use the exported client
+    const employeesRes = await client.query('SELECT * FROM employees');
     const managers = employeesRes.rows.map(({ id, first_name, last_name }) => ({
         name: `${first_name} ${last_name}`,
         value: id,
     }));
-    managers.unshift({ name: 'None', value: null }); // Add option for no manager
+    managers.unshift({ name: 'None', value: null }); 
 
     const { firstName, lastName, roleId, managerId } = await inquirer.prompt([
         { name: 'firstName', message: 'Enter the employee\'s first name:' },
