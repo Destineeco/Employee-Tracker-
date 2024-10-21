@@ -81,7 +81,7 @@ async function viewDepartments() {
 // View all roles
 async function viewRoles() {
     const query = `
-        SELECT roles.id, roles.title, roles.salary, departments.name AS department
+        SELECT roles.id, roles.title, roles.salary, departments.name AS departments
         FROM roles
         JOIN departments ON roles.department_id = departments.id`;
     const res = await client.query(query); // Use the exported client
@@ -92,7 +92,7 @@ async function viewRoles() {
 async function viewEmployees() {
     const query = `
         SELECT employees.id, employees.first_name, employees.last_name, roles.title,
-               departments.name AS department, roles.salary,
+               departments.name AS departments, roles.salary,
                manager.first_name AS manager_first_name,
                manager.last_name AS manager_last_name
         FROM employees

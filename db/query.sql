@@ -1,9 +1,8 @@
-
 SELECT
-    department.name AS departments,
-    employee.first_name,
-    employee.last_name,
-    role.title
+    departments.name AS departments,
+    employees.first_name,
+    employees.last_name,
+    roles.title
 FROM
     employee
 LEFT JOIN role ON employee.role_id = role.id

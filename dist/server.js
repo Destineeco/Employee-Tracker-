@@ -74,7 +74,7 @@ async function viewDepartments() {
 // View all roles
 async function viewRoles() {
     const query = `
-        SELECT roles.id, roles.title, roles.salary, departments.name AS department
+        SELECT roles.id, roles.title, roles.salary, departments.name AS departments
         FROM roles
         JOIN departments ON roles.department_id = departments.id`;
     const res = await client.query(query); // Use the exported client
@@ -84,7 +84,7 @@ async function viewRoles() {
 async function viewEmployees() {
     const query = `
         SELECT employees.id, employees.first_name, employees.last_name, roles.title,
-               departments.name AS department, roles.salary,
+               departments.name AS departments, roles.salary,
                manager.first_name AS manager_first_name,
                manager.last_name AS manager_last_name
         FROM employees
@@ -120,20 +120,19 @@ async function addRole() {
             choices: departments,
         },
     ]);
-    await client.query('INSERT INTO roles (title, salary, department_id) VALUES ($1, $2, $3)', [roleTitle, roleSalary, departmentId] // Use the exported client
-    );
+    await client.query('INSERT INTO roles (title, salary, department_id) VALUES ($1, $2, $3)', [roleTitle, roleSalary, departmentId]);
     console.log(`Added role: ${roleTitle}`);
 }
 // Add an employee
 async function addEmployee() {
-    const rolesRes = await client.query('SELECT * FROM roles'); // Use the exported client
+    const rolesRes = await client.query('SELECT * FROM roles');
     const roles = rolesRes.rows.map(({ id, title }) => ({ name: title, value: id }));
-    const employeesRes = await client.query('SELECT * FROM employees'); // Use the exported client
+    const employeesRes = await client.query('SELECT * FROM employees');
     const managers = employeesRes.rows.map(({ id, first_name, last_name }) => ({
         name: `${first_name} ${last_name}`,
         value: id,
     }));
-    managers.unshift({ name: 'None', value: null }); // Add option for no manager
+    managers.unshift({ name: 'None', value: null });
     const { firstName, lastName, roleId, managerId } = await inquirer.prompt([
         { name: 'firstName', message: 'Enter the employee\'s first name:' },
         { name: 'lastName', message: 'Enter the employee\'s last name:' },
