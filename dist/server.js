@@ -26,9 +26,9 @@ async function startApp() {
         type: 'list',
         message: 'What would you like to do?',
         choices: [
-            'View all departments',
-            'View all roles',
-            'View all employees',
+            'View all department',
+            'View all role',
+            'View all employee',
             'Add a department',
             'Add a role',
             'Add an employee',
@@ -37,14 +37,14 @@ async function startApp() {
         ],
     });
     switch (action) {
-        case 'View all departments':
-            await viewDepartments();
+        case 'View all department':
+            await viewdepartment();
             break;
-        case 'View all roles':
-            await viewRoles();
+        case 'View all role':
+            await viewrole();
             break;
-        case 'View all employees':
-            await viewEmployees();
+        case 'View all employee':
+            await viewemployee();
             break;
         case 'Add a department':
             await addDepartment();
@@ -66,31 +66,31 @@ async function startApp() {
     // Restart the application
     startApp();
 }
-// View all Departments
-async function viewDepartments() {
-    const res = await client.query('SELECT * FROM departments'); // Use the exported client
+// View all department
+async function viewdepartment() {
+    const res = await client.query('SELECT * FROM department'); // Use the exported client
     console.table(res.rows);
 }
-// View all roles
-async function viewRoles() {
+// View all role
+async function viewrole() {
     const query = `
-        SELECT roles.id, roles.title, roles.salary, departments.name AS departments
-        FROM roles
-        JOIN departments ON roles.department_id = departments.id`;
+        SELECT role.id, role.title, role.salary, department.name AS department
+        FROM role
+        JOIN department ON role.department_id = department.id`;
     const res = await client.query(query); // Use the exported client
     console.table(res.rows);
 }
-// View all employees
-async function viewEmployees() {
+// View all employee
+async function viewemployee() {
     const query = `
-        SELECT employees.id, employees.first_name, employees.last_name, roles.title,
-               departments.name AS departments, roles.salary,
+        SELECT employee.id, employee.first_name, employee.last_name, role.title,
+               department.name AS department, role.salary,
                manager.first_name AS manager_first_name,
                manager.last_name AS manager_last_name
-        FROM employees
-        JOIN roles ON employees.role_id = roles.id
-        JOIN departments ON roles.department_id = departments.id
-        LEFT JOIN employees manager ON employees.manager_id = manager.id`;
+        FROM employee
+        JOIN role ON employee.role_id = role.id
+        JOIN department ON role.department_id = department.id
+        LEFT JOIN employee manager ON employee.manager_id = manager.id`;
     const res = await client.query(query); // Use the exported client
     console.table(res.rows);
 }
@@ -100,35 +100,35 @@ async function addDepartment() {
         name: 'departmentName',
         message: 'Enter the name of the department:',
     });
-    await client.query('INSERT INTO departments (name) VALUES ($1)', [departmentName]); // Use the exported client
+    await client.query('INSERT INTO department (name) VALUES ($1)', [departmentName]); // Use the exported client
     console.log(`Added department: ${departmentName}`);
 }
 // Add a role
 async function addRole() {
-    const departmentsRes = await client.query('SELECT * FROM departments'); // Use the exported client
-    const departments = departmentsRes.rows.map(({ id, name }) => ({
+    const departmentRes = await client.query('SELECT * FROM department'); // Use the exported client
+    const department = departmentRes.rows.map(({ id, name }) => ({
         name,
         value: id,
     }));
-    const { roleTitle, roleSalary, departmentId } = await inquirer.prompt([
+    const { roleTitle, rolealary, departmentId } = await inquirer.prompt([
         { name: 'roleTitle', message: 'Enter the role title:' },
-        { name: 'roleSalary', message: 'Enter the salary for the role:' },
+        { name: 'rolealary', message: 'Enter the salary for the role:' },
         {
             type: 'list',
             name: 'departmentId',
             message: 'Select the department:',
-            choices: departments,
+            choices: department,
         },
     ]);
-    await client.query('INSERT INTO roles (title, salary, department_id) VALUES ($1, $2, $3)', [roleTitle, roleSalary, departmentId]);
+    await client.query('INSERT INTO role (title, salary, department_id) VALUES ($1, $2, $3)', [roleTitle, rolealary, departmentId]);
     console.log(`Added role: ${roleTitle}`);
 }
 // Add an employee
 async function addEmployee() {
-    const rolesRes = await client.query('SELECT * FROM roles');
-    const roles = rolesRes.rows.map(({ id, title }) => ({ name: title, value: id }));
-    const employeesRes = await client.query('SELECT * FROM employees');
-    const managers = employeesRes.rows.map(({ id, first_name, last_name }) => ({
+    const roleRes = await client.query('SELECT * FROM role');
+    const role = roleRes.rows.map(({ id, title }) => ({ name: title, value: id }));
+    const employeeRes = await client.query('SELECT * FROM employee');
+    const managers = employeeRes.rows.map(({ id, first_name, last_name }) => ({
         name: `${first_name} ${last_name}`,
         value: id,
     }));
@@ -140,7 +140,7 @@ async function addEmployee() {
             type: 'list',
             name: 'roleId',
             message: 'Select the employee\'s role:',
-            choices: roles,
+            choices: role,
         },
         {
             type: 'list',
@@ -149,34 +149,34 @@ async function addEmployee() {
             choices: managers,
         },
     ]);
-    await client.query('INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)', [firstName, lastName, roleId, managerId] // Use the exported client
+    await client.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)', [firstName, lastName, roleId, managerId] // Use the exported client
     );
     console.log(`Added employee: ${firstName} ${lastName}`);
 }
 // Update an employee's role
 async function updateEmployeeRole() {
-    const employeesRes = await client.query('SELECT * FROM employees'); // Use the exported client
-    const employees = employeesRes.rows.map(({ id, first_name, last_name }) => ({
+    const employeeRes = await client.query('SELECT * FROM employee'); // Use the exported client
+    const employee = employeeRes.rows.map(({ id, first_name, last_name }) => ({
         name: `${first_name} ${last_name}`,
         value: id,
     }));
-    const rolesRes = await client.query('SELECT * FROM roles'); // Use the exported client
-    const roles = rolesRes.rows.map(({ id, title }) => ({ name: title, value: id }));
+    const roleRes = await client.query('SELECT * FROM role'); // Use the exported client
+    const role = roleRes.rows.map(({ id, title }) => ({ name: title, value: id }));
     const { employeeId, newRoleId } = await inquirer.prompt([
         {
             type: 'list',
             name: 'employeeId',
             message: 'Select the employee to update:',
-            choices: employees,
+            choices: employee,
         },
         {
             type: 'list',
             name: 'newRoleId',
             message: 'Select the new role:',
-            choices: roles,
+            choices: role,
         },
     ]);
-    await client.query('UPDATE employees SET role_id = $1 WHERE id = $2', [newRoleId, employeeId] // Use the exported client
+    await client.query('UPDATE employee SET role_id = $1 WHERE id = $2', [newRoleId, employeeId] // Use the exported client
     );
     console.log('Employee role updated');
 }

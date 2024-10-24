@@ -20,7 +20,6 @@ const connectDb = async () => {
     catch (error) {
         console.error('Database connection error:', error);
     }
-    return connectDb;
 };
 // Export the client and connectDb function
 export { client, connectDb };

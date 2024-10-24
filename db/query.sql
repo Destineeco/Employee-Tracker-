@@ -1,10 +1,10 @@
 SELECT
-    departments.name AS departments,
-    employees.first_name,
-    employees.last_name,
+    department.name AS department,
+    employee.first_name,
+    employee.last_name,
     roles.title
 FROM
     employee
-LEFT JOIN role ON employee.role_id = role.id
-LEFT JOIN departments ON role.department_id = department.id
-ORDER BY department.title, employee.last_name;
+LEFT JOIN role ON employee.role.id = role.id
+LEFT JOIN department ON role.department_id = department.id
+ORDER BY department.name, employee.last_name;
