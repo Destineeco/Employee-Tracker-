@@ -1,25 +1,24 @@
-import pkg from 'pg';
 import dotenv from 'dotenv';
-const { Client } = pkg;
-// Load environment variables from .env file
 dotenv.config();
-// Create a new PostgreSQL client
-const client = new Client({
-    host: process.env.DB_HOST,
-    port: 5432,
+// Import and require Pool (node-postgres)
+// We'll be creating a Connection Pool. Read up on the benefits here: https://node-postgres.com/features/pooling
+import pg from 'pg';
+const { Pool } = pg;
+const pool = new Pool({
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
+    host: 'localhost',
     database: process.env.DB_NAME,
+    port: 5432,
 });
-// Connect to the database
-const connectDb = async () => {
+const connectToDb = async () => {
     try {
-        await client.connect();
-        console.log('Connected to the database successfully.');
+        await pool.connect();
+        console.log('Connected to the database.');
     }
-    catch (error) {
-        console.error('Database connection error:', error);
+    catch (err) {
+        console.error('Error connecting to database:', err);
+        process.exit(1);
     }
 };
-// Export the client and connectDb function
-export { client, connectDb };
+export { pool, connectToDb };

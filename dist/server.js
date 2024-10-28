@@ -1,24 +1,10 @@
 import express from 'express';
 import inquirer from 'inquirer';
-import fs from 'fs';
-import path from 'path';
-import { client, connectDb } from './connection.js'; // Import the connection
+import { pool, connectToDb } from './connection.js'; // Import the connection
 import dotenv from 'dotenv';
 dotenv.config(); // Load environment variables from .env file
 const app = express();
 const PORT = process.env.PORT || 3000;
-// Function to initialize the database schema
-async function initDb() {
-    const schemaPath = path.join('db', 'schema.sql');
-    try {
-        const schema = fs.readFileSync(schemaPath, 'utf8');
-        await client.query(schema); // Use the exported client to execute the schema SQL
-        console.log('Database schema initialized successfully.');
-    }
-    catch (error) {
-        console.error('Error initializing database schema:', error);
-    }
-}
 // Start the application
 async function startApp() {
     const { action } = await inquirer.prompt({
@@ -59,7 +45,7 @@ async function startApp() {
             await updateEmployeeRole();
             break;
         case 'Exit':
-            await client.end(); // Use the exported client to close the connection
+            await pool.end(); // Use the exported pool to close the connection
             console.log('Goodbye!');
             return;
     }
@@ -68,7 +54,7 @@ async function startApp() {
 }
 // View all department
 async function viewdepartment() {
-    const res = await client.query('SELECT * FROM department'); // Use the exported client
+    const res = await pool.query('SELECT * FROM department'); // Use the exported pool
     console.table(res.rows);
 }
 // View all role
@@ -77,7 +63,7 @@ async function viewrole() {
         SELECT role.id, role.title, role.salary, department.name AS department
         FROM role
         JOIN department ON role.department_id = department.id`;
-    const res = await client.query(query); // Use the exported client
+    const res = await pool.query(query); // Use the exported pool
     console.table(res.rows);
 }
 // View all employee
@@ -91,7 +77,7 @@ async function viewemployee() {
         JOIN role ON employee.role_id = role.id
         JOIN department ON role.department_id = department.id
         LEFT JOIN employee manager ON employee.manager_id = manager.id`;
-    const res = await client.query(query); // Use the exported client
+    const res = await pool.query(query); // Use the exported pool
     console.table(res.rows);
 }
 // Add a department
@@ -100,12 +86,12 @@ async function addDepartment() {
         name: 'departmentName',
         message: 'Enter the name of the department:',
     });
-    await client.query('INSERT INTO department (name) VALUES ($1)', [departmentName]); // Use the exported client
+    await pool.query('INSERT INTO department (name) VALUES ($1)', [departmentName]); // Use the exported pool
     console.log(`Added department: ${departmentName}`);
 }
 // Add a role
 async function addRole() {
-    const departmentRes = await client.query('SELECT * FROM department'); // Use the exported client
+    const departmentRes = await pool.query('SELECT * FROM department'); // Use the exported pool
     const department = departmentRes.rows.map(({ id, name }) => ({
         name,
         value: id,
@@ -120,14 +106,14 @@ async function addRole() {
             choices: department,
         },
     ]);
-    await client.query('INSERT INTO role (title, salary, department_id) VALUES ($1, $2, $3)', [roleTitle, rolealary, departmentId]);
+    await pool.query('INSERT INTO role (title, salary, department_id) VALUES ($1, $2, $3)', [roleTitle, rolealary, departmentId]);
     console.log(`Added role: ${roleTitle}`);
 }
 // Add an employee
 async function addEmployee() {
-    const roleRes = await client.query('SELECT * FROM role');
+    const roleRes = await pool.query('SELECT * FROM role');
     const role = roleRes.rows.map(({ id, title }) => ({ name: title, value: id }));
-    const employeeRes = await client.query('SELECT * FROM employee');
+    const employeeRes = await pool.query('SELECT * FROM employee');
     const managers = employeeRes.rows.map(({ id, first_name, last_name }) => ({
         name: `${first_name} ${last_name}`,
         value: id,
@@ -149,18 +135,18 @@ async function addEmployee() {
             choices: managers,
         },
     ]);
-    await client.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)', [firstName, lastName, roleId, managerId] // Use the exported client
+    await pool.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)', [firstName, lastName, roleId, managerId] // Use the exported pool
     );
     console.log(`Added employee: ${firstName} ${lastName}`);
 }
 // Update an employee's role
 async function updateEmployeeRole() {
-    const employeeRes = await client.query('SELECT * FROM employee'); // Use the exported client
+    const employeeRes = await pool.query('SELECT * FROM employee'); // Use the exported pool
     const employee = employeeRes.rows.map(({ id, first_name, last_name }) => ({
         name: `${first_name} ${last_name}`,
         value: id,
     }));
-    const roleRes = await client.query('SELECT * FROM role'); // Use the exported client
+    const roleRes = await pool.query('SELECT * FROM role'); // Use the exported pool
     const role = roleRes.rows.map(({ id, title }) => ({ name: title, value: id }));
     const { employeeId, newRoleId } = await inquirer.prompt([
         {
@@ -176,13 +162,12 @@ async function updateEmployeeRole() {
             choices: role,
         },
     ]);
-    await client.query('UPDATE employee SET role_id = $1 WHERE id = $2', [newRoleId, employeeId] // Use the exported client
+    await pool.query('UPDATE employee SET role_id = $1 WHERE id = $2', [newRoleId, employeeId] // Use the exported pool
     );
     console.log('Employee role updated');
 }
 // Initialize database and start the application
 (async () => {
-    await connectDb(); // Connect to the database
-    await initDb(); // Initialize the schema
+    await connectToDb(); // Connect to the database
     startApp(); // Start the interactive app
 })();

@@ -10,17 +10,7 @@ dotenv.config(); // Load environment variables from .env file
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Function to initialize the database schema
-async function initDb() {
-    const schemaPath = path.join('db', 'schema.sql');
-    try {
-        const schema = fs.readFileSync(schemaPath, 'utf8');
-        await pool.query(schema); // Use the exported pool to execute the schema SQL
-        console.log('Database schema initialized successfully.');
-    } catch (error) {
-        console.error('Error initializing database schema:', error);
-    }
-}
+
 
 // Start the application
 async function startApp() {
@@ -212,6 +202,5 @@ async function updateEmployeeRole() {
 // Initialize database and start the application
 (async () => {
     await connectToDb(); // Connect to the database
-    await initDb(); // Initialize the schema
     startApp(); // Start the interactive app
 })();
