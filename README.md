@@ -13,8 +13,9 @@ Employee Tracker is a command-line application that enables users to manage empl
 
 ## Installation
 Users must install node.js and npm and its node packages along with PostgresSQL
-users will also need to install inquire package 
-  
+* [Inquirer package](https://www.npmjs.com/package/inquirer/v/8.2.4)
+* [pg package](https://www.npmjs.com/package/pg)
+
 ## Usage
 ```bash
 npm run start
