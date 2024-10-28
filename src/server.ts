@@ -1,7 +1,5 @@
 import express from 'express';
 import inquirer from 'inquirer';
-import fs from 'fs';
-import path from 'path';
 import { pool, connectToDb } from './connection.js'; // Import the connection
 import dotenv from 'dotenv';
 
